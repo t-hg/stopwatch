@@ -6,7 +6,13 @@ import (
 	"github.com/t-hg/stopwatch/curses"
 )
 
+var memoizedText string
+
 func Render(text string) {
+	if memoizedText == text {
+		return
+	}
+	memoizedText = text
 	maxWidth := curses.Getmaxx()
 	maxHeight := curses.Getmaxy()
 	textWidth := 0
