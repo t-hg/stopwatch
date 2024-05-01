@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"os/signal"
+	"syscall"
 
 	"github.com/t-hg/stopwatch/stopwatch"
 	"github.com/t-hg/stopwatch/tui"
@@ -13,10 +14,17 @@ func main() {
 
 	interrupt := make(chan os.Signal)
 	signal.Notify(interrupt, os.Interrupt)
+	sigwch := make(chan os.Signal)
+	signal.Notify(sigwch, syscall.SIGWINCH)
 	go func() {
-		select {
-		case <- interrupt:
-			running = false
+		for {
+			select {
+			case <-interrupt:
+				running = false
+			case <-sigwch:
+				tui.End()
+				tui.Init()
+			}
 		}
 	}()
 
@@ -28,7 +36,7 @@ func main() {
 
 	for running {
 		select {
-		case text := <- sw.Display():
+		case text := <-sw.Display():
 			tui.Render(text)
 		}
 	}
