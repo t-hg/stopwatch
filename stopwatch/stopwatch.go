@@ -13,18 +13,20 @@ type Stopwatch interface {
 }
 
 type stopwatch struct {
-	running   bool
-	control   chan string
-	display   chan string
-	millisecs int
+	running       bool
+	control       chan string
+	display       chan string
+	timeReference int64
+	timeElapsed   int64
 }
 
 func New() Stopwatch {
 	s := &stopwatch{
-		running:   false,
-		control:   make(chan string),
-		display:   make(chan string),
-		millisecs: 0,
+		running:       false,
+		control:       make(chan string),
+		display:       make(chan string),
+		timeReference: 0,
+		timeElapsed:   0,
 	}
 
 	go func() {
@@ -34,22 +36,24 @@ func New() Stopwatch {
 				switch ctrl {
 				case "start":
 					s.running = true
+					s.timeReference = time.Now().UnixNano() - s.timeElapsed
 				case "stop":
 					s.running = false
 				case "reset":
 					if !s.running {
-						s.millisecs = 0
+						s.timeReference = 0
+						s.timeElapsed = 0
 					}
 				default:
-					// ignore
+					panic("Unknown control: " + ctrl)
 				}
 			default:
 				if s.running {
-					s.millisecs += 1
-					hours := (s.millisecs / 1000 / 60 / 60) % 24
-					minutes := (s.millisecs / 1000 / 60) % 60
-					seconds := (s.millisecs / 1000) % 60
-					tenth := (s.millisecs / 100) % 10
+					s.timeElapsed = time.Now().UnixNano() - s.timeReference
+					hours := (s.timeElapsed / 1000000000 / 60 / 60) % 24
+					minutes := (s.timeElapsed / 1000000000 / 60) % 60
+					seconds := (s.timeElapsed / 1000000000) % 60
+					tenth := (s.timeElapsed / 100000000) % 10
 					figletized := ""
 					if hours > 0 && hours >= 10 {
 						figletized = Figletize(fmt.Sprintf("%02d : %02d : %02d", hours, minutes, seconds))
@@ -68,7 +72,6 @@ func New() Stopwatch {
 					s.display <- figletized
 				}
 			}
-			time.Sleep(time.Millisecond)
 		}
 	}()
 

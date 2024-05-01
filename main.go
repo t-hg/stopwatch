@@ -14,8 +14,6 @@ func main() {
 		select {
 		case d := <- s.Display():
 			fmt.Println(d)
-		default:
-			// do nothing
 		}
 	}
 }
