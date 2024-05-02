@@ -1,4 +1,4 @@
-package tui
+package ui
 
 import (
 	"strings"
@@ -8,7 +8,7 @@ import (
 
 var memoizedText string
 
-func Render(text string) {
+func (*ui) Render(text string) {
 	if memoizedText == text {
 		return
 	}
@@ -24,11 +24,11 @@ func Render(text string) {
 			textWidth = len(line)
 		}
 	}
-	startX := maxWidth / 2 - textWidth / 2
-	startY := maxHeight / 2 - textHeight / 2
+	startX := maxWidth/2 - textWidth/2
+	startY := maxHeight/2 - textHeight/2
 	curses.Clear()
 	for i, line := range lines {
-		curses.MvAddStr(startY + i, startX, line)
+		curses.MvAddStr(startY+i, startX, line)
 	}
 	curses.Refresh()
 }

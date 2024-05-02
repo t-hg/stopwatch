@@ -13,6 +13,7 @@ type Stopwatch interface {
 	Reset()
 	Display() chan string
 	SetStyleFunc(fn StyleFunc)
+	IsRunning() bool
 }
 
 var defaultStyleFunc = func(text string) string {
@@ -20,22 +21,22 @@ var defaultStyleFunc = func(text string) string {
 }
 
 type stopwatch struct {
-	running        bool
-	control        chan string
-	display        chan string
-	timeReference  int64
-	timeElapsed    int64
-	styleFunc StyleFunc
+	running       bool
+	control       chan string
+	display       chan string
+	timeReference int64
+	timeElapsed   int64
+	styleFunc     StyleFunc
 }
 
 func New() Stopwatch {
 	s := &stopwatch{
-		running:        false,
-		control:        make(chan string),
-		display:        make(chan string),
-		timeReference:  0,
-		timeElapsed:    0,
-		styleFunc: defaultStyleFunc,
+		running:       false,
+		control:       make(chan string),
+		display:       make(chan string),
+		timeReference: 0,
+		timeElapsed:   0,
+		styleFunc:     defaultStyleFunc,
 	}
 
 	go func() {
@@ -49,9 +50,10 @@ func New() Stopwatch {
 				case "stop":
 					s.running = false
 				case "reset":
+					s.timeElapsed = 0
+					s.timeReference = time.Now().UnixNano() - s.timeElapsed
 					if !s.running {
-						s.timeReference = 0
-						s.timeElapsed = 0
+						s.display <- s.styleFunc("0") + ".0"
 					}
 				default:
 					panic("Unknown control: " + ctrl)
@@ -80,6 +82,7 @@ func New() Stopwatch {
 					stylized += fmt.Sprintf(".%d", tenth)
 					s.display <- stylized
 				}
+				time.Sleep(time.Millisecond)
 			}
 		}
 	}()
@@ -105,4 +108,8 @@ func (s *stopwatch) Display() chan string {
 
 func (s *stopwatch) SetStyleFunc(fn StyleFunc) {
 	s.styleFunc = fn
+}
+
+func (s *stopwatch) IsRunning() bool {
+	return s.running
 }

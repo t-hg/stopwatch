@@ -45,10 +45,14 @@ func Clear() {
 	C.clear()
 }
 
-func MvAddStr(y int, x int, str string) {
-	C.mvaddstr(C.int(y), C.int(x), C.CString(str))
-}
-
 func Refresh() {
 	C.refresh()
+}
+
+func GetCh() rune {
+	return rune(C.getch())
+}
+
+func MvAddStr(y int, x int, str string) {
+	C.mvaddstr(C.int(y), C.int(x), C.CString(str))
 }
