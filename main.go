@@ -6,6 +6,7 @@ import (
 	"syscall"
 
 	"github.com/t-hg/stopwatch/stopwatch"
+	"github.com/t-hg/stopwatch/style"
 	"github.com/t-hg/stopwatch/tui"
 )
 
@@ -32,6 +33,7 @@ func main() {
 	defer tui.End()
 
 	sw := stopwatch.New()
+	sw.SetStyleFunc(style.Figletize)
 	sw.Start()
 
 	for running {

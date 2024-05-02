@@ -5,28 +5,37 @@ import (
 	"time"
 )
 
+type StyleFunc func(string) string
+
 type Stopwatch interface {
 	Start()
 	Stop()
 	Reset()
 	Display() chan string
+	SetStyleFunc(fn StyleFunc)
+}
+
+var defaultStyleFunc = func(text string) string {
+	return text
 }
 
 type stopwatch struct {
-	running       bool
-	control       chan string
-	display       chan string
-	timeReference int64
-	timeElapsed   int64
+	running        bool
+	control        chan string
+	display        chan string
+	timeReference  int64
+	timeElapsed    int64
+	styleFunc StyleFunc
 }
 
 func New() Stopwatch {
 	s := &stopwatch{
-		running:       false,
-		control:       make(chan string),
-		display:       make(chan string),
-		timeReference: 0,
-		timeElapsed:   0,
+		running:        false,
+		control:        make(chan string),
+		display:        make(chan string),
+		timeReference:  0,
+		timeElapsed:    0,
+		styleFunc: defaultStyleFunc,
 	}
 
 	go func() {
@@ -54,22 +63,22 @@ func New() Stopwatch {
 					minutes := (s.timeElapsed / 1000000000 / 60) % 60
 					seconds := (s.timeElapsed / 1000000000) % 60
 					tenth := (s.timeElapsed / 100000000) % 10
-					figletized := ""
+					stylized := ""
 					if hours > 0 && hours >= 10 {
-						figletized = Figletize(fmt.Sprintf("%02d : %02d : %02d", hours, minutes, seconds))
+						stylized = s.styleFunc(fmt.Sprintf("%02d : %02d : %02d", hours, minutes, seconds))
 					} else if hours > 0 && hours < 10 {
-						figletized = Figletize(fmt.Sprintf("%d : %02d : %02d", hours, minutes, seconds))
+						stylized = s.styleFunc(fmt.Sprintf("%d : %02d : %02d", hours, minutes, seconds))
 					} else if minutes > 0 && minutes >= 10 {
-						figletized = Figletize(fmt.Sprintf("%02d : %02d", minutes, seconds))
+						stylized = s.styleFunc(fmt.Sprintf("%02d : %02d", minutes, seconds))
 					} else if minutes > 0 && minutes < 10 {
-						figletized = Figletize(fmt.Sprintf("%d : %02d", minutes, seconds))
+						stylized = s.styleFunc(fmt.Sprintf("%d : %02d", minutes, seconds))
 					} else if seconds > 10 {
-						figletized = Figletize(fmt.Sprintf("%02d", seconds))
+						stylized = s.styleFunc(fmt.Sprintf("%02d", seconds))
 					} else {
-						figletized = Figletize(fmt.Sprintf("%d", seconds))
+						stylized = s.styleFunc(fmt.Sprintf("%d", seconds))
 					}
-					figletized += fmt.Sprintf(".%d", tenth)
-					s.display <- figletized
+					stylized += fmt.Sprintf(".%d", tenth)
+					s.display <- stylized
 				}
 			}
 		}
@@ -92,4 +101,8 @@ func (s *stopwatch) Reset() {
 
 func (s *stopwatch) Display() chan string {
 	return s.display
+}
+
+func (s *stopwatch) SetStyleFunc(fn StyleFunc) {
+	s.styleFunc = fn
 }
