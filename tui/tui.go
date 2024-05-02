@@ -3,13 +3,15 @@ package tui
 import "github.com/t-hg/stopwatch/curses"
 
 func Init() {
-	curses.Initscr()
-	curses.Noecho()
+	curses.InitScr()
+	curses.NoEcho()
 	curses.Cbreak()
+	curses.CursSet(0)
 }
 
 func End() {
-	curses.Nocbreak()
+	curses.CursSet(2)
+	curses.NoCbreak()
 	curses.Echo()
-	curses.Endwin()
+	curses.EndWin()
 }

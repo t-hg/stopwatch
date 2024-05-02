@@ -5,15 +5,15 @@ package curses
 // #include <curses.h>
 import "C"
 
-func Initscr() {
+func InitScr() {
 	C.initscr()
 }
 
-func Endwin() {
+func EndWin() {
 	C.endwin()
 }
 
-func Noecho() {
+func NoEcho() {
 	C.noecho()
 }
 
@@ -25,15 +25,19 @@ func Cbreak() {
 	C.cbreak()
 }
 
-func Nocbreak() {
+func NoCbreak() {
 	C.nocbreak()
 }
 
-func Getmaxx() int {
+func CursSet(visibility int) {
+	C.curs_set(C.int(visibility))
+}
+
+func GetMaxX() int {
 	return int(C.getmaxx(C.stdscr))
 }
 
-func Getmaxy() int {
+func GetMaxY() int {
 	return int(C.getmaxy(C.stdscr))
 }
 
@@ -41,7 +45,7 @@ func Clear() {
 	C.clear()
 }
 
-func Mvaddstr(y int, x int, str string) {
+func MvAddStr(y int, x int, str string) {
 	C.mvaddstr(C.int(y), C.int(x), C.CString(str))
 }
 

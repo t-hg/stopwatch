@@ -13,8 +13,8 @@ func Render(text string) {
 		return
 	}
 	memoizedText = text
-	maxWidth := curses.Getmaxx()
-	maxHeight := curses.Getmaxy()
+	maxWidth := curses.GetMaxX()
+	maxHeight := curses.GetMaxY()
 	textWidth := 0
 	textHeight := 0
 	lines := strings.Split(text, "\n")
@@ -28,7 +28,7 @@ func Render(text string) {
 	startY := maxHeight / 2 - textHeight / 2
 	curses.Clear()
 	for i, line := range lines {
-		curses.Mvaddstr(startY + i, startX, line)
+		curses.MvAddStr(startY + i, startX, line)
 	}
 	curses.Refresh()
 }
