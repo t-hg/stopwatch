@@ -84,6 +84,7 @@ loop:
 				start = 0
 			}
 			elapsed = 0
+			text = fmt.Sprintf("%d", elapsed)
 		case 'q':
 			break loop
 		}
@@ -92,6 +93,7 @@ loop:
 			elapsed = now - start
 			text = fmt.Sprintf("%d", elapsed)
 		}
+		// TODO: styling
 		print(text)
 		time.Sleep(50 * time.Millisecond)
 	}
