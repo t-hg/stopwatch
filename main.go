@@ -4,63 +4,47 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
-	"github.com/t-hg/stopwatch/stopwatch"
-	"github.com/t-hg/stopwatch/style"
-	"github.com/t-hg/stopwatch/ui"
+	"github.com/t-hg/stopwatch/curses"
 )
 
-func main() {
-	running := true
+func initialize() {
+	curses.InitScr()
+	curses.Cbreak()
+	curses.NoEcho()
+	curses.CursSet(0)
+}
 
-	ui := ui.New()
+func cleanup() {
+	curses.CursSet(2)
+	curses.Echo()
+	curses.NoCbreak()
+	curses.EndWin()
+}
 
-	interrupt := make(chan os.Signal)
-	signal.Notify(interrupt, os.Interrupt)
-	sigwch := make(chan os.Signal)
-	signal.Notify(sigwch, syscall.SIGWINCH)
-	go func() {
-		for {
-			select {
-			case <-interrupt:
-				running = false
-			case <-sigwch:
-				ui.End()
-				ui.Init()
-			}
-		}
-	}()
+func handleSIGINT() {
+	signals := make(chan os.Signal)
+	signal.Notify(signals, syscall.SIGINT)	
+	<-signals
+	cleanup()
+	os.Exit(0)
+}
 
-	stopwatch := stopwatch.New()
-	stopwatch.SetStyleFunc(style.Figletize)
-
-	ui.Init()
-	defer ui.End()
-	ui.MapKey('s', func() {
-		if stopwatch.IsRunning() {
-			stopwatch.Stop()
-		} else {
-			stopwatch.Start()
-		}
-	})
-	ui.MapKey('r', stopwatch.Reset)
-	ui.MapKey('q', func() {
-		running = false
-	})
-
-	ui.Render(`
-'s' - Start/Stop
-'r' - Reset
-'q' - Quit
-`)
-
-	for running {
-		select {
-		case text := <-stopwatch.Display():
-			ui.Render(text)
-		default:
-			time.Sleep(time.Millisecond)
-		}
+func handleSIGWINCH() {
+	signals := make(chan os.Signal)
+	signal.Notify(signals, syscall.SIGWINCH)	
+	for {
+		<-signals
+		cleanup()
+		initialize()
+		curses.Refresh()
 	}
+}
+
+func main() {
+	go handleSIGINT()
+	go handleSIGWINCH()
+	initialize()
+	curses.GetCh()
+	cleanup()
 }
