@@ -30,25 +30,6 @@ func cleanup() {
 	curses.EndWin()
 }
 
-func handleSIGINT() {
-	signals := make(chan os.Signal)
-	signal.Notify(signals, syscall.SIGINT)
-	<-signals
-	cleanup()
-	os.Exit(0)
-}
-
-func handleSIGWINCH() {
-	signals := make(chan os.Signal)
-	signal.Notify(signals, syscall.SIGWINCH)
-	for {
-		<-signals
-		cleanup()
-		initialize()
-		curses.Refresh()
-	}
-}
-
 func print(text string) {
 	curses.Clear()
 	maxLineLen := 0
@@ -69,15 +50,25 @@ func print(text string) {
 }
 
 func main() {
-	go handleSIGINT()
-	go handleSIGWINCH()
 	initialize()
+	sigint := make(chan os.Signal, 1)
+	sigwinch := make(chan os.Signal, 1)
+	signal.Notify(sigint, syscall.SIGINT)
+	signal.Notify(sigwinch, syscall.SIGWINCH)
 	text := startupMessage
 	var running bool
 	var start int64
 	var elapsed int64
 loop:
 	for {
+		select {
+		case <-sigint:
+			break loop
+		case <-sigwinch:
+			curses.EndWin()
+			curses.Refresh()
+		default:
+		}
 		switch curses.GetCh() {
 		case 's':
 			if running {
@@ -99,7 +90,7 @@ loop:
 		if running {
 			now := time.Now().UnixMilli()
 			elapsed = now - start
-			text = fmt.Sprintf("%d", elapsed)	
+			text = fmt.Sprintf("%d", elapsed)
 		}
 		print(text)
 		time.Sleep(50 * time.Millisecond)
