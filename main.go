@@ -1,16 +1,17 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/t-hg/stopwatch/curses"
 )
 
-const startup_message = 
-	"'s' - start/stop\n" + 
+const startup_message = "'s' - start/stop\n" +
 	"'r' - reset\n" +
 	"'q' - quit"
 
@@ -19,6 +20,7 @@ func initialize() {
 	curses.Cbreak()
 	curses.NoEcho()
 	curses.CursSet(0)
+	curses.NoDelay(true)
 }
 
 func cleanup() {
@@ -30,7 +32,7 @@ func cleanup() {
 
 func handleSIGINT() {
 	signals := make(chan os.Signal)
-	signal.Notify(signals, syscall.SIGINT)	
+	signal.Notify(signals, syscall.SIGINT)
 	<-signals
 	cleanup()
 	os.Exit(0)
@@ -38,7 +40,7 @@ func handleSIGINT() {
 
 func handleSIGWINCH() {
 	signals := make(chan os.Signal)
-	signal.Notify(signals, syscall.SIGWINCH)	
+	signal.Notify(signals, syscall.SIGWINCH)
 	for {
 		<-signals
 		cleanup()
@@ -48,6 +50,7 @@ func handleSIGWINCH() {
 }
 
 func print(text string) {
+	curses.Clear()
 	maxLineLen := 0
 	lines := strings.Split(text, "\n")
 	for _, line := range lines {
@@ -57,11 +60,12 @@ func print(text string) {
 	}
 	maxY := curses.GetMaxY()
 	maxX := curses.GetMaxX()
-	y := maxY / 2 - len(lines) / 2
-	x := maxX / 2 - maxLineLen / 2
+	y := maxY/2 - len(lines)/2
+	x := maxX/2 - maxLineLen/2
 	for idx, line := range lines {
-		curses.MvAddStr(y+idx, x, line)	
+		curses.MvAddStr(y+idx, x, line)
 	}
+	curses.Refresh()
 }
 
 func main() {
@@ -69,6 +73,35 @@ func main() {
 	go handleSIGWINCH()
 	initialize()
 	print(startup_message)
-	curses.GetCh()
+	var running bool
+	var start int64
+	var elapsed int64
+loop:
+	for {
+		switch curses.GetCh() {
+		case 's':
+			if running {
+				running = false
+			} else {
+				running = true
+				start = time.Now().UnixMilli() - elapsed
+			}
+		case 'r':
+			if running {
+				start = time.Now().UnixMilli()
+			} else {
+				start = 0
+			}
+			elapsed = 0
+		case 'q':
+			break loop
+		}
+		if running {
+			now := time.Now().UnixMilli()
+			elapsed = now - start
+			print(fmt.Sprintf("%d", elapsed))
+		}
+		time.Sleep(50 * time.Millisecond)
+	}
 	cleanup()
 }

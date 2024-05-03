@@ -49,6 +49,10 @@ func Refresh() {
 	C.refresh()
 }
 
+func NoDelay(enabled bool) {
+	C.nodelay(C.stdscr, C.bool(enabled))
+}
+
 func GetCh() rune {
 	return rune(C.getch())
 }
