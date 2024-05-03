@@ -11,9 +11,9 @@ import (
 	"github.com/t-hg/stopwatch/curses"
 )
 
-const startup_message = "'s' - start/stop\n" +
-	"'r' - reset\n" +
-	"'q' - quit"
+const startupMessage = `'s' - start/stop
+'r' - reset
+'q' - quit`
 
 func initialize() {
 	curses.InitScr()
@@ -72,7 +72,7 @@ func main() {
 	go handleSIGINT()
 	go handleSIGWINCH()
 	initialize()
-	print(startup_message)
+	text := startupMessage
 	var running bool
 	var start int64
 	var elapsed int64
@@ -99,8 +99,9 @@ loop:
 		if running {
 			now := time.Now().UnixMilli()
 			elapsed = now - start
-			print(fmt.Sprintf("%d", elapsed))
+			text = fmt.Sprintf("%d", elapsed)	
 		}
+		print(text)
 		time.Sleep(50 * time.Millisecond)
 	}
 	cleanup()
