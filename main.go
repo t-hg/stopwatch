@@ -106,7 +106,8 @@ loop:
 				start = 0
 			}
 			elapsed = 0
-			text = "0.0"
+			text = style.Apply("0", charset)
+			text = fmt.Sprintf("%s.%d", text, 0)
 		case 'q':
 			break loop
 		}
