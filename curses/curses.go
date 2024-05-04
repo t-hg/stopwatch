@@ -3,7 +3,12 @@ package curses
 // #cgo CFLAGS: -g -Wall
 // #cgo LDFLAGS: -lcurses
 // #include <curses.h>
+// #include <locale.h>
 import "C"
+
+func SetLocale() {
+	C.setlocale(C.LC_ALL, C.CString(""))
+}
 
 func InitScr() {
 	C.initscr()
@@ -49,8 +54,8 @@ func Refresh() {
 	C.refresh()
 }
 
-func NoDelay(enabled bool) {
-	C.nodelay(C.stdscr, C.bool(enabled))
+func NoDelay() {
+	C.nodelay(C.stdscr, C.bool(true))
 }
 
 func GetCh() rune {

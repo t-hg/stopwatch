@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"os/signal"
@@ -40,12 +41,17 @@ func render(text string) {
 }
 
 func main() {
+	// flags
+	flagStyle := flag.Int("style", 1, "different styles (1, 2 or 3)")
+	flag.Parse()
+
 	// setup
+	curses.SetLocale()
 	curses.InitScr()
 	curses.Cbreak()
 	curses.NoEcho()
 	curses.CursSet(0)
-	curses.NoDelay(true)
+	curses.NoDelay()
 
 	// signal handlers
 	sigint := make(chan os.Signal, 1)
@@ -55,6 +61,17 @@ func main() {
 
 	// text to be displayed
 	text := startupMessage
+
+	// styling to be used
+	var charset []string
+	switch *flagStyle {
+	case 1:
+		charset = style.Charset1
+	case 2:
+		charset = style.Charset2
+	case 3:
+		charset = style.Charset3
+	}
 
 	// loop variables
 	var running bool
@@ -110,15 +127,14 @@ loop:
 				text = fmt.Sprintf("%02d:%02d", minutes, seconds)
 			} else if minutes > 0 && minutes < 10 {
 				text = fmt.Sprintf("%d:%02d", minutes, seconds)
-			}  else {
+			} else {
 				text = fmt.Sprintf("%d", seconds)
 			}
-			text = style.Apply(text, style.Charset3)
+			text = style.Apply(text, charset)
 			text = fmt.Sprintf("%s.%d", text, tenth)
 		}
 
 		// display text
-		// TODO: styling
 		render(text)
 
 		// little time interval
