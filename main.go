@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/t-hg/stopwatch/curses"
+	"github.com/t-hg/stopwatch/style"
 )
 
 const startupMessage = `'s' - start/stop
@@ -112,6 +113,7 @@ loop:
 			}  else {
 				text = fmt.Sprintf("%d", seconds)
 			}
+			text = style.Apply(text, style.Charset3)
 			text = fmt.Sprintf("%s.%d", text, tenth)
 		}
 
