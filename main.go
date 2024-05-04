@@ -88,7 +88,7 @@ loop:
 				start = 0
 			}
 			elapsed = 0
-			text = fmt.Sprintf("%d", elapsed)
+			text = "0.0"
 		case 'q':
 			break loop
 		}
@@ -97,7 +97,22 @@ loop:
 		if running {
 			now := time.Now().UnixMilli()
 			elapsed = now - start
-			text = fmt.Sprintf("%d", elapsed)
+			hours := (elapsed / 1000 / 60 / 60) % 24
+			minutes := (elapsed / 1000 / 60) % 60
+			seconds := (elapsed / 1000) % 60
+			tenth := (elapsed / 100) % 10
+			if hours > 0 && hours >= 10 {
+				text = fmt.Sprintf("%02d:%02d:%02d", hours, minutes, seconds)
+			} else if hours > 0 && hours < 10 {
+				text = fmt.Sprintf("%d:%02d:%02d", hours, minutes, seconds)
+			} else if minutes > 0 && minutes >= 10 {
+				text = fmt.Sprintf("%02d:%02d", minutes, seconds)
+			} else if minutes > 0 && minutes < 10 {
+				text = fmt.Sprintf("%d:%02d", minutes, seconds)
+			}  else {
+				text = fmt.Sprintf("%d", seconds)
+			}
+			text = fmt.Sprintf("%s.%d", text, tenth)
 		}
 
 		// display text
