@@ -56,6 +56,7 @@ func main() {
 	signal.Notify(sigwinch, syscall.SIGWINCH)
 
 	// text to be displayed
+	memoizedText := ""
 	text := `
 <space> - start/stop
     <r> - reset
@@ -135,7 +136,12 @@ loop:
 		}
 
 		// display text
-		render(text)
+		if text != memoizedText {
+			// call render only if text has not changed.
+			// this reduces flickering
+			render(text)
+			memoizedText = text
+		}
 
 		// little time interval
 		// to avoid busy wait
