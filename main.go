@@ -13,12 +13,6 @@ import (
 	"github.com/t-hg/stopwatch/style"
 )
 
-const startupMessage = `
-'s' - start/stop
-'r' - reset
-'q' - quit
-`
-
 func render(text string) {
 	// find y, x so that given
 	// text is centered
@@ -62,8 +56,11 @@ func main() {
 	signal.Notify(sigwinch, syscall.SIGWINCH)
 
 	// text to be displayed
-	text := startupMessage
-
+	text := `
+<space> - start/stop
+    <r> - reset
+    <q> - quit
+`
 	// styling to be used
 	var charset []string
 	switch *flagStyle {
@@ -94,7 +91,7 @@ loop:
 
 		// handle character input
 		switch curses.GetCh() {
-		case 's':
+		case '\x20':
 			if running {
 				running = false
 			} else {
