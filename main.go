@@ -13,9 +13,11 @@ import (
 	"github.com/t-hg/stopwatch/style"
 )
 
-const startupMessage = `'s' - start/stop
+const startupMessage = `
+'s' - start/stop
 'r' - reset
-'q' - quit`
+'q' - quit
+`
 
 func render(text string) {
 	// find y, x so that given
@@ -23,8 +25,9 @@ func render(text string) {
 	maxLineLen := 0
 	lines := strings.Split(text, "\n")
 	for _, line := range lines {
-		if len(line) > maxLineLen {
-			maxLineLen = len(line)
+		runes := []rune(line)
+		if len(runes) > maxLineLen {
+			maxLineLen = len(runes)
 		}
 	}
 	maxY := curses.GetMaxY()
@@ -46,12 +49,11 @@ func main() {
 	flag.Parse()
 
 	// setup
-	curses.SetLocale()
 	curses.InitScr()
 	curses.Cbreak()
 	curses.NoEcho()
 	curses.CursSet(0)
-	curses.NoDelay()
+	curses.NoDelay(true)
 
 	// signal handlers
 	sigint := make(chan os.Signal, 1)

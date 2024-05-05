@@ -6,11 +6,8 @@ package curses
 // #include <locale.h>
 import "C"
 
-func SetLocale() {
-	C.setlocale(C.LC_ALL, C.CString(""))
-}
-
 func InitScr() {
+	C.setlocale(C.LC_ALL, C.CString(""))
 	C.initscr()
 }
 
@@ -54,8 +51,8 @@ func Refresh() {
 	C.refresh()
 }
 
-func NoDelay() {
-	C.nodelay(C.stdscr, C.bool(true))
+func NoDelay(enabled bool) {
+	C.nodelay(C.stdscr, C.bool(enabled))
 }
 
 func GetCh() rune {
